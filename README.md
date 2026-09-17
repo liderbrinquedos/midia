@@ -21,7 +21,7 @@ Abra http://127.0.0.1:8876. O backend serve o frontend na prévia local. Documen
 - `frontend/index.html`: portal e modal de produto.
 - `frontend/css/style.css`: identidade visual e layouts responsivos.
 - `frontend/js/config.js`: configuração pública centralizada de API_BASE_URL.
-- `frontend/js/app.js`: busca, filtros, ordenação, modal e compartilhamento.
+- `frontend/js/app.js`: busca, navegação entre todos os produtos, novidades e mais acessados, modal e compartilhamento.
 - `backend/app/main.py`: aplicação FastAPI e CORS.
 - `backend/app/routers/media.py`: endpoints do catálogo.
 - `backend/app/services/index.py`: repositório de busca em memória carregado do JSON.
@@ -60,6 +60,6 @@ Próxima fase: confirmar tipo de conta Microsoft, tenant e drive, permissões m�
 
 ## Limites da prévia
 
-Dados, códigos, EANs, datas e contagens de acessos são demonstrativos. As imagens são referências externas, incluindo produto de outro fabricante no cartão de caminhão; não constituem catálogo oficial Líder. Fontes em docs/image-sources.md. Imagens não são copiadas para o repositório e dependem da disponibilidade dos sites de origem. A marca tipográfica é provisória.
+Dados, códigos, EANs, datas e contagens de acessos são demonstrativos. As imagens são referências externas, incluindo produto de outro fabricante no cartão de caminhão; não constituem catálogo oficial Líder. Fontes em docs/image-sources.md. Imagens não são copiadas para o repositório e dependem da disponibilidade dos sites de origem. O logo oficial fornecido pelo usuário está em frontend/assets/logo-lider.webp.
 
 O link de baixar abre a imagem externa para salvamento pelo navegador; download direto e ZIP ainda não estão implementados. Vídeos estão vazios. WhatsApp é bloqueado em localhost para não compartilhar links inacessíveis a terceiros. Em produção, o botão abre o compositor do WhatsApp; o usuário envia a mensagem. Login, favoritos, analytics reais, documentos, permissões e painel administrativo são etapas futuras. Prévia ainda não publicada e sem conexão ao Microsoft Graph.

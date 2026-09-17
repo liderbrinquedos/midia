@@ -17,7 +17,7 @@ $('#search').oninput=()=>{clearTimeout(search.timer);search.timer=setTimeout(()=
 $('#sort').onchange=render;
 $('#clear').onclick=()=>{category='';query='';$('#search').value='';search()};$('#retry').onclick=init;
 document.querySelectorAll('[data-query]').forEach(b=>b.onclick=()=>{query=b.dataset.query;category='';$('#search').value=query;search()});
-document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-view]').forEach(n=>n.classList.toggle('active',n===b));$('#section-title').textContent=b.dataset.view==='latest'?'Novidades':b.dataset.view==='popular'?'Mais acessados · demonstração':'Explore as mídias';$('#sort').value=b.dataset.view==='popular'?'popular':'recent';query='';category='';$('#search').value='';search()});
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-view]').forEach(n=>n.classList.toggle('active',n===b));$('#section-title').textContent=b.dataset.view==='latest'?'Novidades':b.dataset.view==='popular'?'Mais acessados · demonstração':'Todos os produtos';$('#sort').value=b.dataset.view==='popular'?'popular':'recent';query='';category='';$('#search').value='';search()});
 document.querySelectorAll('[data-media]').forEach(b=>b.onclick=()=>showMedia(b.dataset.media));
 $('#close-dialog').onclick=()=>dialog.close();dialog.onclick=e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}};
 function productURL(){const url=new URL(location.href);url.search='';url.searchParams.set('produto',selected.code);return url.href}
