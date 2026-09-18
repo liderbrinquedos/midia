@@ -63,3 +63,15 @@ Próxima fase: confirmar tipo de conta Microsoft, tenant e drive, permissões m�
 Dados, códigos, EANs, datas e contagens de acessos são demonstrativos. As imagens são referências externas, incluindo produto de outro fabricante no cartão de caminhão; não constituem catálogo oficial Líder. Fontes em docs/image-sources.md. Imagens não são copiadas para o repositório e dependem da disponibilidade dos sites de origem. O logo oficial fornecido pelo usuário está em frontend/assets/logo-lider.webp.
 
 O link de baixar abre a imagem externa para salvamento pelo navegador; download direto e ZIP ainda não estão implementados. Vídeos estão vazios. WhatsApp é bloqueado em localhost para não compartilhar links inacessíveis a terceiros. Em produção, o botão abre o compositor do WhatsApp; o usuário envia a mensagem. Login, favoritos, analytics reais, documentos, permissões e painel administrativo são etapas futuras. Prévia ainda não publicada e sem conexão ao Microsoft Graph.
+
+## Catálogo real do OneDrive
+
+Configure as cinco variáveis Microsoft/OneDrive de `.env.example` no `.env` privado. Não envie segredos ao Git. MEDIA_INDEX_PATH é opcional e aceita um caminho absoluto.
+
+Na pasta `backend`, execute `python -m app.services.sync` para atualizar o catálogo. A varredura inclui todas as subpastas autorizadas e só substitui o índice após concluir sem falhas. O servidor recarrega o índice atualizado automaticamente. A sincronização é manual nesta versão; execute novamente quando o banco mudar. Em Render, mantenha o índice e views.sqlite3 em armazenamento persistente.
+
+O catálogo agrupa arquivos pelas pastas e códigos existentes. Coleções sem código continuam como coleções. Códigos repetidos em linhas diferentes não são mesclados. EANs não são inventados. Novidades usa a data de alteração dos arquivos. Mais acessados registra aberturas no portal, sem identificar visitantes; não representa visitantes únicos.
+
+A busca é paginada. Fotos, vídeos e materiais têm links de visualização e download do original. Alguns formatos exigem aplicativo compatível. URLs temporárias são resolvidas no servidor e não são gravadas no índice. Downloads só aceitam IDs presentes no catálogo. O índice privado e contagens locais são ignorados pelo Git. Logs e atalhos Windows não integram o catálogo. O servidor local usa 127.0.0.1; publicação e controle de acesso devem ser configurados na hospedagem.
+
+Validação: `python -m unittest discover -s tests -v` dentro de `backend`. A suíte usa catálogo de exemplo isolado, sem credenciais nem chamadas reais ao Graph.

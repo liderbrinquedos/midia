@@ -24,3 +24,5 @@
 .nav.active{box-shadow:inset 3px 0 0 #ed2e35}
 .primary:hover{background:#17477f}
 .media-tabs button.selected{border-bottom-color:#ed2e35}
+
+.file-row{gap:12px;flex-wrap:wrap}.file-row>span{min-width:0;overflow-wrap:anywhere;flex:1 1 180px}.media-tabs{flex-wrap:wrap}#grid+.secondary{display:block;margin:28px auto}#grid+.secondary[hidden]{display:none}
