@@ -1,68 +1,62 @@
-# Deploy no Coolify pelo GitHub
+# Deploy no Coolify com Docker Compose
 
-## Aplicação
+## Corrigir o erro do deploy anterior
 
-1. Crie uma aplicação a partir do repositório `liderbrinquedos/midia`. Se privado, selecione a conexão GitHub que tem acesso a ele.
-2. Selecione a branch `main` e Build Pack **Dockerfile**.
-3. Base Directory: `/`. Dockerfile Location: `/Dockerfile`.
-4. Ports Exposes: `8000`. Não configure comando de build/start adicional: o Dockerfile já define a execução.
-5. Domínio: o endereço HTTPS escolhido para o portal (por exemplo, `https://midias.liderbrinquedos.com.br`). O DNS precisa apontar para o servidor/proxy Coolify. Faça a troca de DNS quando o deploy estiver validado.
+O log mostrou que o Coolify executou `docker compose -f render.yaml build`. `render.yaml` é uma configuração do Render, não um Compose, daí o erro `services must be a mapping`. Selecione o novo arquivo abaixo; o Dockerfile continua sendo usado pelo Compose para construir a imagem.
 
-Frontend e API usam o mesmo domínio. Mantenha `frontend/js/config.js` com API_BASE_URL vazio.
+## Campos no Coolify
 
-## Variáveis de ambiente
+1. Repositório: `liderbrinquedos/midia`, branch `main`.
+2. Build Pack: **Docker Compose**.
+3. Base Directory: `/`.
+4. Docker Compose Location: `/docker-compose.yml` (substitua `/render.yaml`).
+5. Salve e recarregue a definição Compose pelo painel, se solicitado.
+6. Em **Domains for portal**, informe `https://midias.liderbrinquedos.com.br:8000` (ou o domínio escolhido com `:8000`). No Coolify, essa porta indica o destino interno do proxy; visitantes usam HTTPS normal, sem a porta no endereço.
+7. Configure as variáveis abaixo e execute Deploy.
 
-Cadastre como variáveis **de runtime**, não Build Variables:
+Não adicione comandos de build/start, portas públicas ou labels manuais de proxy. O Compose expõe a porta interna 8000; o Coolify configura o acesso pelo domínio. O frontend e a API ficam juntos, com API_BASE_URL vazio.
 
-| Nome | Valor |
-| --- | --- |
-| MICROSOFT_TENANT_ID | ID do diretório Microsoft já configurado |
-| MICROSOFT_CLIENT_ID | ID do aplicativo já autorizado |
-| MICROSOFT_CLIENT_SECRET | Valor do segredo válido, marcado como secreto |
-| ONEDRIVE_DRIVE_ID | ID do drive autorizado |
-| ONEDRIVE_ROOT_ITEM_ID | ID da pasta raiz autorizada |
-| CORS_ORIGINS | Domínio HTTPS do portal |
+## Variáveis de runtime
 
-Copie os cinco valores do `.env` local para o painel. Não copie MEDIA_INDEX_PATH do Windows. O contêiner já usa `/app/backend/data/private/media_index.json`. Não são necessárias variáveis públicas de frontend nem credenciais durante o build.
+Copie do `.env` local para Environment Variables do Coolify:
 
-## Persistência — antes do primeiro deploy
+- `MICROSOFT_TENANT_ID`
+- `MICROSOFT_CLIENT_ID`
+- `MICROSOFT_CLIENT_SECRET` (valor do segredo válido, marcado como secreto)
+- `ONEDRIVE_DRIVE_ID`
+- `ONEDRIVE_ROOT_ITEM_ID`
+- `CORS_ORIGINS=https://midias.liderbrinquedos.com.br` (sem `:8000`; ajuste ao domínio usado)
 
-Em Persistent Storage, adicione um **volume nomeado**:
+Não configure como Build Variables. O Compose permite construir a imagem sem credenciais, mas a primeira sincronização exige os cinco valores Microsoft/OneDrive. MEDIA_INDEX_PATH já é fixado no caminho Linux correto; não copie o caminho Windows.
 
-- Nome sugerido: `lider-midias-data`.
-- Destination Path: `/app/backend/data/private`.
+## Volume persistente
 
-O volume guarda `media_index.json` e `views.sqlite3`. Use uma instância/réplica. Faça backup do volume no Coolify. Prefira volume nomeado; um bind mount vazio do host exige permissão de escrita para UID/GID `10001:10001`.
+O Compose cria o volume nomeado `midias-data` e monta em `/app/backend/data/private`. O Coolify/Docker pode prefixar o nome para isolar a aplicação. Ele guarda o índice e as contagens de acessos. Não adicione outro volume no mesmo destino pelo painel e não exclua esse volume durante um redeploy. Use uma única instância e faça backup do volume.
 
-## Deploy e primeira carga
+Se já houver um volume com catálogo de uma implantação anterior, preserve-o antes de migrar. O volume novo começará com uma sincronização completa; contagens antigas não são copiadas automaticamente.
 
-Clique em Deploy. Sem índice no volume, o contêiner sincroniza o OneDrive antes de iniciar a API. Os logs mostram a quantidade de pastas e arquivos lidos, sem imprimir credenciais. Aguarde alguns minutos. Se a sincronização falhar, a inicialização falha explicitamente; confira as variáveis e a autorização da pasta nos logs.
+## Primeira inicialização
 
-O Dockerfile inclui health check em `/health`, porta 8000, com tolerância inicial de 600 segundos. O Coolify usa o HEALTHCHECK da imagem. Se o servidor precisar de mais tempo para a primeira carga, aumente o limite de espera do deploy. Em novos deploys, o volume preservado evita repetir a primeira carga.
+Sem índice no volume, o contêiner lê as subpastas autorizadas do OneDrive antes de iniciar a API. Os logs mostram o avanço por pastas e arquivos. Aguarde alguns minutos; o health check tem tolerância inicial de 600 segundos. Se a sincronização falhar, confira as variáveis e a autorização da pasta. Um volume com índice existente permite inicialização imediata nos próximos deploys.
 
-## Conferência
-
-- `/health` retorna `{"status":"ok"}`.
-- A página mostra `ONEDRIVE · CATÁLOGO REAL`.
-- Busque um código real e abra uma foto.
-- Confirme o download do original.
-- Reinicie a aplicação e confira se catálogo e Mais acessados foram preservados.
-
-O portal não tem login próprio. Para restringir o público, configure a proteção no proxy antes de disponibilizar o endereço. Permissão de leitura no OneDrive não funciona como login para os visitantes do portal.
+Após subir, confira `/health`, a indicação `ONEDRIVE · CATÁLOGO REAL`, busca por código, miniatura e download. Configure o DNS do domínio para o proxy Coolify. O portal não tem login próprio; para uso restrito, configure proteção no proxy antes de disponibilizá-lo.
 
 ## Atualizar o catálogo
 
-No terminal da aplicação Coolify, execute uma única sincronização por vez:
+No terminal do serviço `portal`, execute uma sincronização por vez:
 
 ```sh
 cd /app/backend
 python -m app.services.sync --output /app/backend/data/private/media_index.json
 ```
 
-O servidor recarrega automaticamente o índice completo. Uma falha preserva o catálogo anterior. A sincronização recorrente ainda não está agendada. Atualizações de código vêm do Git: use Redeploy após o push ou habilite auto-deploy pela integração GitHub do Coolify.
+O índice completo substitui o anterior de forma atômica e é recarregado automaticamente. A sincronização recorrente ainda não está agendada. Não use `docker compose down -v`: isso apaga o volume e as contagens.
 
-## Referências
+## Validar o Compose sem expor segredos
 
-- https://coolify.io/docs/applications/builds/dockerfile
-- https://coolify.io/docs/applications/configuration/health-checks
-- https://coolify.io/docs/core/persistent-storage/storage-mounts/overview
+```sh
+docker compose --env-file .env.example config --quiet
+docker compose --env-file .env.example build
+```
+
+Referências oficiais: [Docker Compose](https://coolify.io/docs/applications/builds/docker-compose) e [domínios](https://coolify.io/docs/core/networking/domains).

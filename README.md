@@ -4,7 +4,7 @@ Portal HTML/CSS/JS servido por FastAPI, integrado ao OneDrive empresarial via Mi
 
 ## Publicar no Coolify
 
-Consulte [o passo a passo](docs/coolify.md). O Dockerfile da raiz entrega frontend e API juntos na porta 8000. Configure um volume persistente e as credenciais Microsoft como variáveis de runtime no Coolify. A primeira inicialização cria o catálogo; reinicializações reutilizam o índice salvo.
+Consulte [o passo a passo](docs/coolify.md). Selecione Docker Compose e o arquivo `/docker-compose.yml`. Ele constrói o Dockerfile, entrega frontend e API juntos na porta 8000 e cria o volume persistente. Configure as credenciais Microsoft como variáveis de runtime no Coolify. Não selecione `render.yaml`. A primeira inicialização cria o catálogo; reinicializações reutilizam o índice salvo.
 
 ## Executar localmente
 
@@ -39,7 +39,7 @@ Na pasta `backend`: `python -m unittest discover -s tests -v`. Os testes usam da
 - `backend/app/`: API, busca e cliente Graph.
 - `backend/app/services/sync.py`: sincronização do catálogo.
 - `backend/tests/`: testes sem chamadas reais ao Graph.
-- `Dockerfile`, `deploy/start.sh`: execução no Coolify.
+- `docker-compose.yml`, `Dockerfile`, `deploy/start.sh`: execução no Coolify.
 - `render.yaml`: configuração antiga do Render, não usada no Coolify.
 
 ## API
